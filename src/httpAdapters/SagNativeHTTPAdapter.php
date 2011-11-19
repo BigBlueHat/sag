@@ -236,7 +236,7 @@ class SagNativeHTTPAdapter extends SagHTTPAdapter {
           }
         }
       }
-      else if($response->headers->{'transfer-encoding'}) {
+      else if(property_exists($response->headers,'transfer-encoding')) {
         /*
          * Parse the response's body, which is being sent in chunks. Welcome to
          * HTTP/1.1 land.
@@ -301,7 +301,7 @@ class SagNativeHTTPAdapter extends SagHTTPAdapter {
     }
 
     // HTTP/1.1 assumes persisted connections, but proxies might close them.
-    if(strtolower($response->headers->connection) != 'close') {
+    if(property_exists($response->headers,'connection') && strtolower($response->headers->connection) != 'close') {
       $this->connPool[] = $sock;
     }
 
