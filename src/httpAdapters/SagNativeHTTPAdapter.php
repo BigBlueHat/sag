@@ -160,7 +160,8 @@ class SagNativeHTTPAdapter extends SagHTTPAdapter {
        *
        * And we can't use a ternary because fgets() wants an int or undefined.
        */
-      if(!$isHeader && $response->headers->{'transfer-encoding'} !== 'chunked') {
+      if(!$isHeader && property_exists($response->headers,'transfer-encoding')
+        && $response->headers->{'transfer-encoding'} !== 'chunked') {
         //the +1 is because fgets() reads (length - 1) bytes
         $line = fgets($sock, $response->headers->{'content-length'} - strlen($response->body) + 1);
       }
