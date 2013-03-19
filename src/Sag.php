@@ -22,7 +22,7 @@ require_once('httpAdapters/SagCURLHTTPAdapter.php');
 /**
  * The Sag class provides the core functionality for talking to CouchDB.
  *
- * @version 0.7.1
+ * @version 0.8.0
  * @package Core
  */
 class Sag {
@@ -1072,7 +1072,7 @@ class Sag {
 
     // Build the request packet.
     $headers["Host"] = "{$this->host}:{$this->port}";
-    $headers["User-Agent"] = "Sag/0.7.1";
+    $headers["User-Agent"] = "Sag/0.8.0";
 
     /*
      * This prevents some unRESTful requests, such as inline attachments in
