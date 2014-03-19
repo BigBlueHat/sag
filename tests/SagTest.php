@@ -15,52 +15,9 @@
 
 // See the README in tests/ for information on running and writing these tests.
 
-require_once('Sag.php');
-require_once('SagFileCache.php');
-require_once('SagMemoryCache.php');
+require_once('SagTestBaseClass.php');
 
-class SagTest extends PHPUnit_Framework_TestCase
-{
-  protected $couchIP;
-  protected $couchDBName;
-  protected $couchAdminName;
-  protected $couchAdminPass;
-  protected $couchHTTPAdapter;
-  protected $couchSSL;
-
-  protected $couch;
-  protected $session_couch;
-  protected $noCacheCouch;
-
-  public function setUp()
-  {
-    $this->couchIP = ($GLOBALS['host']) ? $GLOBALS['host'] : '127.0.0.1';
-    $this->couchPort = ($GLOBALS['port']) ? $GLOBALS['port'] : '5984';
-    $this->couchDBName = ($GLOBALS['db']) ? $GLOBALS['db'] : 'sag_tests';
-    $this->couchAdminName = ($GLOBALS['adminName']) ? $GLOBALS['adminName'] : 'admin';
-    $this->couchAdminPass = ($GLOBALS['adminPass']) ? $GLOBALS['adminPass'] : 'passwd';
-    $this->couchHTTPAdapter = $GLOBALS['httpAdapter'];
-    $this->couchSSL = (isset($GLOBALS['ssl'])) ? $GLOBALS['ssl'] : false;
-
-    $this->couch = new Sag($this->couchIP, $this->couchPort);
-    $this->couch->setHTTPAdapter($this->couchHTTPAdapter);
-    $this->couch->useSSL($this->couchSSL);
-    $this->couch->login($this->couchAdminName, $this->couchAdminPass);
-    $this->couch->setDatabase($this->couchDBName);
-    $this->couch->setRWTimeout(5);
-
-    $this->session_couch = new Sag($this->couchIP, $this->couchPort);
-    $this->session_couch->setHTTPAdapter($this->couchHTTPAdapter);
-    $this->session_couch->useSSL($this->couchSSL);
-    $this->session_couch->setDatabase($this->couchDBName);
-    $this->session_couch->login($this->couchAdminName, $this->couchAdminPass);
-
-    $this->noCacheCouch = new Sag($this->couchIP, $this->couchPort);
-    $this->noCacheCouch->setHTTPAdapter($this->couchHTTPAdapter);
-    $this->noCacheCouch->useSSL($this->couchSSL);
-    $this->noCacheCouch->setDatabase($this->couchDBName);
-    $this->noCacheCouch->login($this->couchAdminName, $this->couchAdminPass);
-  }
+class SagTest extends SagTestBaseClass {
 
   public function test_setPathPrefix() {
     $this->assertEquals($this->couch->setPathPrefix('db'), $this->couch);
@@ -371,57 +328,6 @@ class SagTest extends PHPUnit_Framework_TestCase
 
       foreach($docs[$i] as $k => $v)
         $this->assertEquals($remoteDoc->$k, $v);
-    }
-  }
-
-  public function test_replication()
-  {
-    $newDB = ($GLOBALS['dbReplication']) ? $GLOBALS['dbReplication'] : 'sag_tests_replication';
-
-    // Basic
-    $this->assertFalse(in_array($newDB, $this->couch->getAllDatabases()->body));
-    $this->assertTrue($this->couch->createDatabase($newDB)->body->ok);
-    $this->assertTrue($this->couch->replicate($this->couchDBName, $newDB)->body->ok);
-    $this->assertTrue($this->couch->deleteDatabase($newDB)->body->ok);
-
-    // create_target
-    $this->assertFalse(in_array($newDB, $this->couch->getAllDatabases()->body));
-    $this->assertTrue($this->couch->replicate($this->couchDBName, $newDB, false, true)->body->ok);
-    $this->assertTrue(in_array($newDB, $this->couch->getAllDatabases()->body));
-    $this->assertTrue($this->couch->deleteDatabase($newDB)->body->ok);
-
-    // filter
-    try
-    {
-      //Provide a valid filter function that does not exist.
-      $this->assertTrue($this->couch->replicate($this->couchDBName, $newDB, false, true, "test")->body->ok);
-      $this->assertFalse(true); //should not get this far
-    }
-    catch(SagCouchException $e)
-    {
-      $this->assertTrue(true); //we want this to happen
-    }
-
-    try
-    {
-      $this->assertFalse($this->couch->replicate($this->couchDBName, $newDB, false, false, 123)->body->ok);
-      $this->assertFalse(true); //should not get this far
-    }
-    catch(SagException $e)
-    {
-      $this->assertTrue(true); //we want this to happen
-    }
-
-    // filter query params
-    try
-    {
-      //Provide a valid filter function that does not exist.
-      $this->assertTrue($this->couch->replicate($this->couchDBName, $newDB, false, true, "test", 123)->body->ok);
-      $this->assertFalse(true); //should not get this far
-    }
-    catch(SagException $e)
-    {
-      $this->assertTrue(true); //we want this to happen
     }
   }
 
